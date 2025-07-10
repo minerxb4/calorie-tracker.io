@@ -4,346 +4,528 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calorie & Protein Tracker</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.2em;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .date {
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+
+        .progress-section {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+            gap: 20px;
+        }
+
         .progress-circle {
+            position: relative;
+            width: 140px;
+            height: 140px;
+        }
+
+        .progress-circle svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+
+        .progress-circle circle {
+            fill: none;
+            stroke-width: 8;
+            stroke-linecap: round;
+        }
+
+        .progress-bg {
+            stroke: #ecf0f1;
+        }
+
+        .progress-calories {
+            stroke: #e74c3c;
+            stroke-dasharray: 0 440;
             transition: stroke-dasharray 0.5s ease;
+        }
+
+        .progress-protein {
+            stroke: #3498db;
+            stroke-dasharray: 0 440;
+            transition: stroke-dasharray 0.5s ease;
+        }
+
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .progress-number {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .progress-label {
+            font-size: 0.8em;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            transition: transform 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .stat-title {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .goals-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .goals-title {
+            font-size: 1.1em;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .goal-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group label {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            margin-bottom: 5px;
+        }
+
+        .input-group input {
+            padding: 12px;
+            border: 2px solid #ecf0f1;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .set-goals-btn {
+            width: 100%;
+            padding: 12px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .set-goals-btn:hover {
+            background: #2980b9;
+        }
+
+        .add-food-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 1.2em;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .food-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .food-name-input {
+            padding: 12px;
+            border: 2px solid #ecf0f1;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        .food-name-input:focus {
+            outline: none;
+            border-color: #e74c3c;
+        }
+
+        .food-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 10px;
+            align-items: end;
+        }
+
+        .add-btn {
+            padding: 12px 20px;
+            background: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .add-btn:hover {
+            background: #219a52;
+        }
+
+        .food-log {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .food-log.hidden {
+            display: none;
+        }
+
+        .food-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .food-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .food-info {
+            flex: 1;
+        }
+
+        .food-name {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .food-stats {
+            font-size: 0.9em;
+            color: #7f8c8d;
+        }
+
+        .remove-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            font-size: 1.2em;
+            transition: background 0.3s ease;
+        }
+
+        .remove-btn:hover {
+            background: #c0392b;
+        }
+
+        .reset-btn {
+            width: 100%;
+            padding: 12px;
+            background: #95a5a6;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background 0.3s ease;
+        }
+
+        .reset-btn:hover {
+            background: #7f8c8d;
+        }
+
+        .note {
+            text-align: center;
+            font-size: 0.8em;
+            color: #7f8c8d;
+            margin-top: 20px;
+            padding: 15px;
+            background: #fff3cd;
+            border-radius: 10px;
+            border: 1px solid #ffeaa7;
+        }
+
+        @media (max-width: 480px) {
+            .progress-section {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .progress-circle {
+                width: 120px;
+                height: 120px;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .goal-inputs {
+                grid-template-columns: 1fr;
+            }
+
+            .food-details {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen py-8">
-    <div class="max-w-md mx-auto bg-white rounded-xl shadow-lg p-6 space-y-6">
+<body>
+    <div class="container">
         <!-- Header -->
-        <div class="text-center space-y-2">
-            <div class="flex items-center justify-center gap-4">
-                <h1 class="text-2xl font-bold text-gray-800 flex items-center justify-center gap-2">
-                    <i data-lucide="flame" class="text-orange-500"></i>
-                    Calorie & Protein Tracker
-                </h1>
-                <button id="resetBtn" class="p-2 text-gray-500 hover:text-gray-700 transition-colors" title="Reset day">
-                    <i data-lucide="rotate-ccw"></i>
-                </button>
-            </div>
-            <div class="flex items-center justify-center gap-2 text-sm text-gray-600">
-                <i data-lucide="calendar"></i>
-                <span id="currentDate"></span>
-            </div>
+        <div class="header">
+            <h1>🔥 Nutrition Tracker</h1>
+            <div class="date" id="currentDate"></div>
         </div>
 
         <!-- Progress Circles -->
-        <div class="flex justify-center gap-8">
-            <!-- Calories Circle -->
-            <div class="relative w-32 h-32">
-                <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" r="40" fill="none" stroke="#e5e7eb" stroke-width="8"/>
-                    <circle id="caloriesProgress" cx="50" cy="50" r="40" fill="none" stroke="#22c55e" stroke-width="8" stroke-dasharray="0 251.3" class="progress-circle"/>
+        <div class="progress-section">
+            <div class="progress-circle">
+                <svg>
+                    <circle cx="70" cy="70" r="60" class="progress-bg"></circle>
+                    <circle cx="70" cy="70" r="60" class="progress-calories" id="caloriesProgress"></circle>
                 </svg>
-                <div class="absolute inset-0 flex flex-col items-center justify-center">
-                    <span id="currentCalories" class="text-lg font-bold text-gray-800">0</span>
-                    <span class="text-xs text-gray-600">calories</span>
+                <div class="progress-text">
+                    <div class="progress-number" id="currentCalories">0</div>
+                    <div class="progress-label">calories</div>
                 </div>
             </div>
-
-            <!-- Protein Circle -->
-            <div class="relative w-32 h-32">
-                <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" r="40" fill="none" stroke="#e5e7eb" stroke-width="8"/>
-                    <circle id="proteinProgress" cx="50" cy="50" r="40" fill="none" stroke="#3b82f6" stroke-width="8" stroke-dasharray="0 251.3" class="progress-circle"/>
+            <div class="progress-circle">
+                <svg>
+                    <circle cx="70" cy="70" r="60" class="progress-bg"></circle>
+                    <circle cx="70" cy="70" r="60" class="progress-protein" id="proteinProgress"></circle>
                 </svg>
-                <div class="absolute inset-0 flex flex-col items-center justify-center">
-                    <span id="currentProtein" class="text-lg font-bold text-gray-800">0g</span>
-                    <span class="text-xs text-gray-600">protein</span>
+                <div class="progress-text">
+                    <div class="progress-number" id="currentProtein">0g</div>
+                    <div class="progress-label">protein</div>
                 </div>
             </div>
         </div>
 
-        <!-- Stats -->
-        <div class="grid grid-cols-2 gap-4">
-            <div class="bg-green-50 p-4 rounded-lg text-center">
-                <div class="flex items-center justify-center gap-2 mb-2">
-                    <i data-lucide="target" class="text-green-600"></i>
-                    <span class="text-sm font-medium text-green-800">Cal Goal</span>
-                </div>
-                <div id="calorieGoal" class="text-lg font-bold text-green-800">2000</div>
+        <!-- Stats Cards -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-title">Goal</div>
+                <div class="stat-value" id="calorieGoal">2000</div>
             </div>
-            <div class="bg-blue-50 p-4 rounded-lg text-center">
-                <div class="flex items-center justify-center gap-2 mb-2">
-                    <i data-lucide="target" class="text-blue-600"></i>
-                    <span class="text-sm font-medium text-blue-800">Protein Goal</span>
-                </div>
-                <div id="proteinGoal" class="text-lg font-bold text-blue-800">150g</div>
+            <div class="stat-card">
+                <div class="stat-title">Protein Goal</div>
+                <div class="stat-value" id="proteinGoal">150g</div>
             </div>
-        </div>
-
-        <!-- Remaining/Over Stats -->
-        <div class="grid grid-cols-2 gap-4">
-            <div id="caloriesRemaining" class="bg-gray-50 p-4 rounded-lg text-center">
-                <div class="flex items-center justify-center gap-2 mb-2">
-                    <i data-lucide="minus" class="text-gray-600"></i>
-                    <span class="text-sm font-medium text-gray-800">Cal Left</span>
-                </div>
-                <div class="text-lg font-bold text-gray-800">2000</div>
+            <div class="stat-card">
+                <div class="stat-title">Remaining</div>
+                <div class="stat-value" id="caloriesRemaining">2000</div>
             </div>
-            <div id="proteinRemaining" class="bg-gray-50 p-4 rounded-lg text-center">
-                <div class="flex items-center justify-center gap-2 mb-2">
-                    <i data-lucide="minus" class="text-gray-600"></i>
-                    <span class="text-sm font-medium text-gray-800">Protein Left</span>
-                </div>
-                <div class="text-lg font-bold text-gray-800">150g</div>
+            <div class="stat-card">
+                <div class="stat-title">Protein Left</div>
+                <div class="stat-value" id="proteinRemaining">150g</div>
             </div>
         </div>
 
         <!-- Goal Setting -->
-        <div class="bg-gray-50 p-4 rounded-lg">
-            <div id="goalDisplay" class="space-y-2">
-                <button id="goalBtn" class="w-full text-left text-sm text-gray-600 hover:text-gray-800 transition-colors">
-                    Daily Goals: <span id="goalText">2000 calories | 150g protein</span> (tap to change)
-                </button>
-            </div>
-            <div id="goalInputs" class="space-y-3 hidden">
-                <div class="flex gap-2">
-                    <input type="number" id="calorieInput" placeholder="2000" class="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"/>
-                    <span class="px-3 py-2 text-sm text-gray-600">calories</span>
+        <div class="goals-section">
+            <div class="goals-title">Set Daily Goals</div>
+            <div class="goal-inputs">
+                <div class="input-group">
+                    <label for="calorieGoalInput">Calorie Goal</label>
+                    <input type="number" id="calorieGoalInput" value="2000" min="1">
                 </div>
-                <div class="flex gap-2">
-                    <input type="number" id="proteinInputGoal" placeholder="150" class="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"/>
-                    <span class="px-3 py-2 text-sm text-gray-600">grams protein</span>
-                </div>
-                <div class="flex gap-2">
-                    <button id="setGoalsBtn" class="flex-1 px-4 py-2 bg-blue-500 text-white rounded-md text-sm hover:bg-blue-600 transition-colors">Set Goals</button>
-                    <button id="cancelGoalsBtn" class="flex-1 px-4 py-2 bg-gray-500 text-white rounded-md text-sm hover:bg-gray-600 transition-colors">Cancel</button>
+                <div class="input-group">
+                    <label for="proteinGoalInput">Protein Goal (g)</label>
+                    <input type="number" id="proteinGoalInput" value="150" min="1">
                 </div>
             </div>
+            <button class="set-goals-btn" onclick="setGoals()">Update Goals</button>
         </div>
 
         <!-- Add Food -->
-        <div class="space-y-4">
-            <h3 class="text-lg font-semibold text-gray-800">Add Food</h3>
-            <div class="space-y-3">
-                <input type="text" id="foodItem" placeholder="Food item (e.g., Grilled Chicken, Protein Shake)" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"/>
-                <div class="flex gap-2">
-                    <input type="number" id="caloriesInputFood" placeholder="Calories" class="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"/>
-                    <input type="number" id="proteinInputFood" placeholder="Protein (g)" class="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"/>
-                    <button id="addFoodBtn" class="px-6 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors flex items-center gap-2">
-                        <i data-lucide="plus"></i>
-                        Add
-                    </button>
+        <div class="add-food-section">
+            <div class="section-title">Add Food</div>
+            <div class="food-form">
+                <input type="text" class="food-name-input" id="foodName" placeholder="Enter food name (e.g., Chicken Breast)">
+                <div class="food-details">
+                    <div class="input-group">
+                        <label for="foodCalories">Calories</label>
+                        <input type="number" id="foodCalories" min="0">
+                    </div>
+                    <div class="input-group">
+                        <label for="foodProtein">Protein (g)</label>
+                        <input type="number" id="foodProtein" min="0">
+                    </div>
+                    <button class="add-btn" onclick="addFood()">Add</button>
                 </div>
             </div>
         </div>
 
         <!-- Food Log -->
-        <div id="foodLogSection" class="space-y-4 hidden">
-            <h3 class="text-lg font-semibold text-gray-800">Today's Food Log</h3>
-            <div id="foodLog" class="space-y-2 max-h-60 overflow-y-auto"></div>
+        <div class="food-log hidden" id="foodLog">
+            <div class="section-title">Today's Food Log</div>
+            <div id="foodList"></div>
         </div>
 
-        <!-- Persistence Note -->
-        <div class="text-xs text-gray-500 text-center p-2 bg-green-50 rounded-lg">
-            ✅ Data automatically saves and will persist after closing the app
+        <!-- Reset Button -->
+        <button class="reset-btn" onclick="resetDay()">Reset Day</button>
+
+        <!-- Note -->
+        <div class="note">
+            ⚠️ Data will reset when you refresh the page
         </div>
     </div>
 
     <script>
-        // Initialize Lucide icons
-        lucide.createIcons();
-
         // State variables
-        let dailyGoal = 2000;
+        let calorieGoal = 2000;
         let proteinGoal = 150;
         let currentCalories = 0;
         let currentProtein = 0;
         let foodLog = [];
-        let lastDate = '';
+        let nextId = 1;
 
-        const today = new Date().toLocaleDateString();
-
-        // DOM elements
-        const currentDateEl = document.getElementById('currentDate');
-        const currentCaloriesEl = document.getElementById('currentCalories');
-        const currentProteinEl = document.getElementById('currentProtein');
-        const calorieGoalEl = document.getElementById('calorieGoal');
-        const proteinGoalEl = document.getElementById('proteinGoal');
-        const caloriesProgressEl = document.getElementById('caloriesProgress');
-        const proteinProgressEl = document.getElementById('proteinProgress');
-        const caloriesRemainingEl = document.getElementById('caloriesRemaining');
-        const proteinRemainingEl = document.getElementById('proteinRemaining');
-        const goalTextEl = document.getElementById('goalText');
-        const goalDisplayEl = document.getElementById('goalDisplay');
-        const goalInputsEl = document.getElementById('goalInputs');
-        const foodLogEl = document.getElementById('foodLog');
-        const foodLogSectionEl = document.getElementById('foodLogSection');
-
-        // Initialize
-        currentDateEl.textContent = today;
-        loadData();
-        updateDisplay();
-
-        // Load data from localStorage
-        function loadData() {
-            const savedGoal = localStorage.getItem('calorieCounter_dailyGoal');
-            const savedProteinGoal = localStorage.getItem('calorieCounter_proteinGoal');
-            const savedCalories = localStorage.getItem('calorieCounter_currentCalories');
-            const savedProtein = localStorage.getItem('calorieCounter_currentProtein');
-            const savedFoodLog = localStorage.getItem('calorieCounter_foodLog');
-            const savedDate = localStorage.getItem('calorieCounter_lastDate');
-
-            if (savedGoal) dailyGoal = parseInt(savedGoal);
-            if (savedProteinGoal) proteinGoal = parseInt(savedProteinGoal);
-
-            // Check if it's a new day
-            if (savedDate && savedDate !== today) {
-                resetDay();
-            } else {
-                if (savedCalories) currentCalories = parseInt(savedCalories);
-                if (savedProtein) currentProtein = parseInt(savedProtein);
-                if (savedFoodLog) foodLog = JSON.parse(savedFoodLog);
-                if (savedDate) lastDate = savedDate;
-                else {
-                    lastDate = today;
-                    localStorage.setItem('calorieCounter_lastDate', today);
-                }
-            }
+        // Initialize the app
+        function init() {
+            document.getElementById('currentDate').textContent = new Date().toLocaleDateString();
+            updateDisplay();
         }
 
-        // Save data to localStorage
-        function saveData() {
-            localStorage.setItem('calorieCounter_dailyGoal', dailyGoal.toString());
-            localStorage.setItem('calorieCounter_proteinGoal', proteinGoal.toString());
-            localStorage.setItem('calorieCounter_currentCalories', currentCalories.toString());
-            localStorage.setItem('calorieCounter_currentProtein', currentProtein.toString());
-            localStorage.setItem('calorieCounter_foodLog', JSON.stringify(foodLog));
-            localStorage.setItem('calorieCounter_lastDate', today);
-        }
-
-        // Update display
-        function updateDisplay() {
-            currentCaloriesEl.textContent = currentCalories;
-            currentProteinEl.textContent = currentProtein + 'g';
-            calorieGoalEl.textContent = dailyGoal;
-            proteinGoalEl.textContent = proteinGoal + 'g';
-            goalTextEl.textContent = `${dailyGoal} calories | ${proteinGoal}g protein`;
-
-            // Update progress circles
-            const calorieProgress = Math.min((currentCalories / dailyGoal) * 100, 100);
-            const proteinProgress = Math.min((currentProtein / proteinGoal) * 100, 100);
+        // Set goals
+        function setGoals() {
+            const newCalorieGoal = parseInt(document.getElementById('calorieGoalInput').value);
+            const newProteinGoal = parseInt(document.getElementById('proteinGoalInput').value);
             
-            caloriesProgressEl.setAttribute('stroke-dasharray', `${calorieProgress * 2.513} 251.3`);
-            proteinProgressEl.setAttribute('stroke-dasharray', `${proteinProgress * 2.513} 251.3`);
-
-            // Update colors for over goals
-            const isOverCalories = currentCalories > dailyGoal;
-            const isOverProtein = currentProtein > proteinGoal;
+            if (newCalorieGoal > 0) calorieGoal = newCalorieGoal;
+            if (newProteinGoal > 0) proteinGoal = newProteinGoal;
             
-            caloriesProgressEl.setAttribute('stroke', isOverCalories ? '#ef4444' : '#22c55e');
-            proteinProgressEl.setAttribute('stroke', isOverProtein ? '#ef4444' : '#3b82f6');
-
-            // Update remaining/over stats
-            updateRemainingStats();
-            updateFoodLog();
-        }
-
-        // Update remaining stats
-        function updateRemainingStats() {
-            const isOverCalories = currentCalories > dailyGoal;
-            const isOverProtein = currentProtein > proteinGoal;
-            
-            const caloriesRemaining = isOverCalories ? currentCalories - dailyGoal : dailyGoal - currentCalories;
-            const proteinRemaining = isOverProtein ? currentProtein - proteinGoal : proteinGoal - currentProtein;
-
-            // Update calories remaining
-            caloriesRemainingEl.className = isOverCalories ? 'bg-red-50 p-4 rounded-lg text-center' : 'bg-gray-50 p-4 rounded-lg text-center';
-            caloriesRemainingEl.querySelector('i').className = isOverCalories ? 'text-red-600' : 'text-gray-600';
-            caloriesRemainingEl.querySelector('span').textContent = isOverCalories ? 'Over Cal' : 'Cal Left';
-            caloriesRemainingEl.querySelector('span').className = isOverCalories ? 'text-sm font-medium text-red-800' : 'text-sm font-medium text-gray-800';
-            caloriesRemainingEl.querySelector('div:last-child').textContent = caloriesRemaining;
-            caloriesRemainingEl.querySelector('div:last-child').className = isOverCalories ? 'text-lg font-bold text-red-800' : 'text-lg font-bold text-gray-800';
-
-            // Update protein remaining
-            proteinRemainingEl.className = isOverProtein ? 'bg-red-50 p-4 rounded-lg text-center' : 'bg-gray-50 p-4 rounded-lg text-center';
-            proteinRemainingEl.querySelector('i').className = isOverProtein ? 'text-red-600' : 'text-gray-600';
-            proteinRemainingEl.querySelector('span').textContent = isOverProtein ? 'Over Protein' : 'Protein Left';
-            proteinRemainingEl.querySelector('span').className = isOverProtein ? 'text-sm font-medium text-red-800' : 'text-sm font-medium text-gray-800';
-            proteinRemainingEl.querySelector('div:last-child').textContent = proteinRemaining + 'g';
-            proteinRemainingEl.querySelector('div:last-child').className = isOverProtein ? 'text-lg font-bold text-red-800' : 'text-lg font-bold text-gray-800';
-        }
-
-        // Update food log display
-        function updateFoodLog() {
-            if (foodLog.length === 0) {
-                foodLogSectionEl.classList.add('hidden');
-                return;
-            }
-
-            foodLogSectionEl.classList.remove('hidden');
-            foodLogEl.innerHTML = '';
-
-            foodLog.forEach(entry => {
-                const entryEl = document.createElement('div');
-                entryEl.className = 'flex items-center justify-between p-3 bg-gray-50 rounded-lg';
-                entryEl.innerHTML = `
-                    <div class="flex-1">
-                        <div class="font-medium text-gray-800">${entry.food}</div>
-                        <div class="text-sm text-gray-600 flex items-center gap-1">
-                            <i data-lucide="clock" class="w-3 h-3"></i>
-                            ${entry.time}
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <div class="text-right">
-                            <div class="font-semibold text-gray-800">${entry.calories} cal</div>
-                            <div class="text-sm text-blue-600">${entry.protein}g protein</div>
-                        </div>
-                        <button onclick="removeFood(${entry.id})" class="p-1 text-red-500 hover:text-red-700 transition-colors">
-                            <i data-lucide="minus" class="w-4 h-4"></i>
-                        </button>
-                    </div>
-                `;
-                foodLogEl.appendChild(entryEl);
-            });
-            lucide.createIcons();
+            updateDisplay();
         }
 
         // Add food
         function addFood() {
-            const foodItem = document.getElementById('foodItem').value.trim();
-            const calories = parseInt(document.getElementById('caloriesInputFood').value);
-            const protein = parseInt(document.getElementById('proteinInputFood').value) || 0;
+            const name = document.getElementById('foodName').value.trim();
+            const calories = parseInt(document.getElementById('foodCalories').value) || 0;
+            const protein = parseInt(document.getElementById('foodProtein').value) || 0;
 
-            if (foodItem && !isNaN(calories) && calories > 0) {
-                const newEntry = {
-                    id: Date.now(),
-                    food: foodItem,
+            if (name && calories > 0) {
+                const food = {
+                    id: nextId++,
+                    name: name,
                     calories: calories,
                     protein: protein,
                     time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                 };
 
-                foodLog.push(newEntry);
+                foodLog.push(food);
                 currentCalories += calories;
                 currentProtein += protein;
 
                 // Clear inputs
-                document.getElementById('foodItem').value = '';
-                document.getElementById('caloriesInputFood').value = '';
-                document.getElementById('proteinInputFood').value = '';
+                document.getElementById('foodName').value = '';
+                document.getElementById('foodCalories').value = '';
+                document.getElementById('foodProtein').value = '';
 
-                saveData();
                 updateDisplay();
             }
         }
 
         // Remove food
         function removeFood(id) {
-            const entryIndex = foodLog.findIndex(entry => entry.id === id);
-            if (entryIndex !== -1) {
-                const entry = foodLog[entryIndex];
-                currentCalories -= entry.calories;
-                currentProtein -= entry.protein;
-                foodLog.splice(entryIndex, 1);
-
-                saveData();
+            const index = foodLog.findIndex(food => food.id === id);
+            if (index !== -1) {
+                const food = foodLog[index];
+                currentCalories -= food.calories;
+                currentProtein -= food.protein;
+                foodLog.splice(index, 1);
                 updateDisplay();
             }
         }
@@ -353,56 +535,88 @@
             currentCalories = 0;
             currentProtein = 0;
             foodLog = [];
-            lastDate = today;
-            saveData();
+            nextId = 1;
             updateDisplay();
         }
 
-        // Event listeners
-        document.getElementById('addFoodBtn').addEventListener('click', addFood);
-        document.getElementById('resetBtn').addEventListener('click', resetDay);
+        // Update display
+        function updateDisplay() {
+            // Update numbers
+            document.getElementById('currentCalories').textContent = currentCalories;
+            document.getElementById('currentProtein').textContent = currentProtein + 'g';
+            document.getElementById('calorieGoal').textContent = calorieGoal;
+            document.getElementById('proteinGoal').textContent = proteinGoal + 'g';
 
-        // Goal setting
-        document.getElementById('goalBtn').addEventListener('click', () => {
-            goalDisplayEl.classList.add('hidden');
-            goalInputsEl.classList.remove('hidden');
-            document.getElementById('calorieInput').value = dailyGoal;
-            document.getElementById('proteinInputGoal').value = proteinGoal;
-        });
-
-        document.getElementById('setGoalsBtn').addEventListener('click', () => {
-            const newCalorieGoal = parseInt(document.getElementById('calorieInput').value);
-            const newProteinGoal = parseInt(document.getElementById('proteinInputGoal').value);
-
-            if (!isNaN(newCalorieGoal) && newCalorieGoal > 0) {
-                dailyGoal = newCalorieGoal;
-            }
-            if (!isNaN(newProteinGoal) && newProteinGoal > 0) {
-                proteinGoal = newProteinGoal;
-            }
-
-            goalDisplayEl.classList.remove('hidden');
-            goalInputsEl.classList.add('hidden');
+            // Update remaining
+            const caloriesLeft = Math.max(0, calorieGoal - currentCalories);
+            const proteinLeft = Math.max(0, proteinGoal - currentProtein);
             
-            saveData();
-            updateDisplay();
-        });
+            document.getElementById('caloriesRemaining').textContent = caloriesLeft;
+            document.getElementById('proteinRemaining').textContent = proteinLeft + 'g';
 
-        document.getElementById('cancelGoalsBtn').addEventListener('click', () => {
-            goalDisplayEl.classList.remove('hidden');
-            goalInputsEl.classList.add('hidden');
-        });
+            // Update progress circles
+            updateProgressCircle('caloriesProgress', currentCalories, calorieGoal);
+            updateProgressCircle('proteinProgress', currentProtein, proteinGoal);
 
-        // Enter key support
+            // Update food log
+            updateFoodLog();
+        }
+
+        // Update progress circle
+        function updateProgressCircle(elementId, current, goal) {
+            const circle = document.getElementById(elementId);
+            const circumference = 2 * Math.PI * 60; // radius = 60
+            const progress = Math.min(current / goal, 1);
+            const dashArray = progress * circumference;
+            
+            circle.style.strokeDasharray = `${dashArray} ${circumference}`;
+            
+            // Change color if over goal
+            if (current > goal) {
+                circle.style.stroke = '#e74c3c';
+            } else {
+                circle.style.stroke = elementId === 'caloriesProgress' ? '#e74c3c' : '#3498db';
+            }
+        }
+
+        // Update food log
+        function updateFoodLog() {
+            const foodLogElement = document.getElementById('foodLog');
+            const foodListElement = document.getElementById('foodList');
+
+            if (foodLog.length === 0) {
+                foodLogElement.classList.add('hidden');
+                return;
+            }
+
+            foodLogElement.classList.remove('hidden');
+            foodListElement.innerHTML = '';
+
+            foodLog.forEach(food => {
+                const foodItem = document.createElement('div');
+                foodItem.className = 'food-item';
+                foodItem.innerHTML = `
+                    <div class="food-info">
+                        <div class="food-name">${food.name}</div>
+                        <div class="food-stats">${food.calories} cal • ${food.protein}g protein • ${food.time}</div>
+                    </div>
+                    <button class="remove-btn" onclick="removeFood(${food.id})">×</button>
+                `;
+                foodListElement.appendChild(foodItem);
+            });
+        }
+
+        // Keyboard support
         document.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
-                if (e.target.id === 'foodItem' || e.target.id === 'caloriesInputFood' || e.target.id === 'proteinInputFood') {
+                if (e.target.id === 'foodName' || e.target.id === 'foodCalories' || e.target.id === 'foodProtein') {
                     addFood();
-                } else if (e.target.id === 'calorieInput' || e.target.id === 'proteinInputGoal') {
-                    document.getElementById('setGoalsBtn').click();
                 }
             }
         });
+
+        // Initialize the app
+        init();
     </script>
 </body>
 </html>
