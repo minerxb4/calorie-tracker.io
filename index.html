@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calorie & Protein Tracker</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .progress-circle {
+            transition: stroke-dasharray 0.5s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen py-8">
+    <div class="max-w-md mx-auto bg-white rounded-xl shadow-lg p-6 space-y-6">
+        <!-- Header -->
+        <div class="text-center space-y-2">
+            <div class="flex items-center justify-center gap-4">
+                <h1 class="text-2xl font-bold text-gray-800 flex items-center justify-center gap-2">
+                    <i data-lucide="flame" class="text-orange-500"></i>
+                    Calorie & Protein Tracker
+                </h1>
+                <button id="resetBtn" class="p-2 text-gray-500 hover:text-gray-700 transition-colors" title="Reset day">
+                    <i data-lucide="rotate-ccw"></i>
+                </button>
+            </div>
+            <div class="flex items-center justify-center gap-2 text-sm text-gray-600">
+                <i data-lucide="calendar"></i>
+                <span id="currentDate"></span>
+            </div>
+        </div>
+
+        <!-- Progress Circles -->
+        <div class="flex justify-center gap-8">
+            <!-- Calories Circle -->
+            <div class="relative w-32 h-32">
+                <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="40" fill="none" stroke="#e5e7eb" stroke-width="8"/>
+                    <circle id="caloriesProgress" cx="50" cy="50" r="40" fill="none" stroke="#22c55e" stroke-width="8" stroke-dasharray="0 251.3" class="progress-circle"/>
+                </svg>
+                <div class="absolute inset-0 flex flex-col items-center justify-center">
+                    <span id="currentCalories" class="text-lg font-bold text-gray-800">0</span>
+                    <span class="text-xs text-gray-600">calories</span>
+                </div>
+            </div>
+
+            <!-- Protein Circle -->
+            <div class="relative w-32 h-32">
+                <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="40" fill="none" stroke="#e5e7eb" stroke-width="8"/>
+                    <circle id="proteinProgress" cx="50" cy="50" r="40" fill="none" stroke="#3b82f6" stroke-width="8" stroke-dasharray="0 251.3" class="progress-circle"/>
+                </svg>
+                <div class="absolute inset-0 flex flex-col items-center justify-center">
+                    <span id="currentProtein" class="text-lg font-bold text-gray-800">0g</span>
+                    <span class="text-xs text-gray-600">protein</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-2 gap-4">
+            <div class="bg-green-50 p-4 rounded-lg text-center">
+                <div class="flex items-center justify-center gap-2 mb-2">
+                    <i data-lucide="target" class="text-green-600"></i>
+                    <span class="text-sm font-medium text-green-800">Cal Goal</span>
+                </div>
+                <div id="calorieGoal" class="text-lg font-bold text-green-800">2000</div>
+            </div>
+            <div class="bg-blue-50 p-4 rounded-lg text-center">
+                <div class="flex items-center justify-center gap-2 mb-2">
+                    <i data-lucide="target" class="text-blue-600"></i>
+                    <span class="text-sm font-medium text-blue-800">Protein Goal</span>
+                </div>
+                <div id="proteinGoal" class="text-lg font-bold text-blue-800">150g</div>
+            </div>
+        </div>
+
+        <!-- Remaining/Over Stats -->
+        <div class="grid grid-cols-2 gap-4">
+            <div id="caloriesRemaining" class="bg-gray-50 p-4 rounded-lg text-center">
+                <div class="flex items-center justify-center gap-2 mb-2">
+                    <i data-lucide="minus" class="text-gray-600"></i>
+                    <span class="text-sm font-medium text-gray-800">Cal Left</span>
+                </div>
+                <div class="text-lg font-bold text-gray-800">2000</div>
+            </div>
+            <div id="proteinRemaining" class="bg-gray-50 p-4 rounded-lg text-center">
+                <div class="flex items-center justify-center gap-2 mb-2">
+                    <i data-lucide="minus" class="text-gray-600"></i>
+                    <span class="text-sm font-medium text-gray-800">Protein Left</span>
+                </div>
+                <div class="text-lg font-bold text-gray-800">150g</div>
+            </div>
+        </div>
+
+        <!-- Goal Setting -->
+        <div class="bg-gray-50 p-4 rounded-lg">
+            <div id="goalDisplay" class="space-y-2">
+                <button id="goalBtn" class="w-full text-left text-sm text-gray-600 hover:text-gray-800 transition-colors">
+                    Daily Goals: <span id="goalText">2000 calories | 150g protein</span> (tap to change)
+                </button>
+            </div>
+            <div id="goalInputs" class="space-y-3 hidden">
+                <div class="flex gap-2">
+                    <input type="number" id="calorieInput" placeholder="2000" class="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+                    <span class="px-3 py-2 text-sm text-gray-600">calories</span>
+                </div>
+                <div class="flex gap-2">
+                    <input type="number" id="proteinInputGoal" placeholder="150" class="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+                    <span class="px-3 py-2 text-sm text-gray-600">grams protein</span>
+                </div>
+                <div class="flex gap-2">
+                    <button id="setGoalsBtn" class="flex-1 px-4 py-2 bg-blue-500 text-white rounded-md text-sm hover:bg-blue-600 transition-colors">Set Goals</button>
+                    <button id="cancelGoalsBtn" class="flex-1 px-4 py-2 bg-gray-500 text-white rounded-md text-sm hover:bg-gray-600 transition-colors">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Food -->
+        <div class="space-y-4">
+            <h3 class="text-lg font-semibold text-gray-800">Add Food</h3>
+            <div class="space-y-3">
+                <input type="text" id="foodItem" placeholder="Food item (e.g., Grilled Chicken, Protein Shake)" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+                <div class="flex gap-2">
+                    <input type="number" id="caloriesInputFood" placeholder="Calories" class="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+                    <input type="number" id="proteinInputFood" placeholder="Protein (g)" class="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+                    <button id="addFoodBtn" class="px-6 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors flex items-center gap-2">
+                        <i data-lucide="plus"></i>
+                        Add
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Food Log -->
+        <div id="foodLogSection" class="space-y-4 hidden">
+            <h3 class="text-lg font-semibold text-gray-800">Today's Food Log</h3>
+            <div id="foodLog" class="space-y-2 max-h-60 overflow-y-auto"></div>
+        </div>
+
+        <!-- Persistence Note -->
+        <div class="text-xs text-gray-500 text-center p-2 bg-green-50 rounded-lg">
+            ✅ Data automatically saves and will persist after closing the app
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // State variables
+        let dailyGoal = 2000;
+        let proteinGoal = 150;
+        let currentCalories = 0;
+        let currentProtein = 0;
+        let foodLog = [];
+        let lastDate = '';
+
+        const today = new Date().toLocaleDateString();
+
+        // DOM elements
+        const currentDateEl = document.getElementById('currentDate');
+        const currentCaloriesEl = document.getElementById('currentCalories');
+        const currentProteinEl = document.getElementById('currentProtein');
+        const calorieGoalEl = document.getElementById('calorieGoal');
+        const proteinGoalEl = document.getElementById('proteinGoal');
+        const caloriesProgressEl = document.getElementById('caloriesProgress');
+        const proteinProgressEl = document.getElementById('proteinProgress');
+        const caloriesRemainingEl = document.getElementById('caloriesRemaining');
+        const proteinRemainingEl = document.getElementById('proteinRemaining');
+        const goalTextEl = document.getElementById('goalText');
+        const goalDisplayEl = document.getElementById('goalDisplay');
+        const goalInputsEl = document.getElementById('goalInputs');
+        const foodLogEl = document.getElementById('foodLog');
+        const foodLogSectionEl = document.getElementById('foodLogSection');
+
+        // Initialize
+        currentDateEl.textContent = today;
+        loadData();
+        updateDisplay();
+
+        // Load data from localStorage
+        function loadData() {
+            const savedGoal = localStorage.getItem('calorieCounter_dailyGoal');
+            const savedProteinGoal = localStorage.getItem('calorieCounter_proteinGoal');
+            const savedCalories = localStorage.getItem('calorieCounter_currentCalories');
+            const savedProtein = localStorage.getItem('calorieCounter_currentProtein');
+            const savedFoodLog = localStorage.getItem('calorieCounter_foodLog');
+            const savedDate = localStorage.getItem('calorieCounter_lastDate');
+
+            if (savedGoal) dailyGoal = parseInt(savedGoal);
+            if (savedProteinGoal) proteinGoal = parseInt(savedProteinGoal);
+
+            // Check if it's a new day
+            if (savedDate && savedDate !== today) {
+                resetDay();
+            } else {
+                if (savedCalories) currentCalories = parseInt(savedCalories);
+                if (savedProtein) currentProtein = parseInt(savedProtein);
+                if (savedFoodLog) foodLog = JSON.parse(savedFoodLog);
+                if (savedDate) lastDate = savedDate;
+                else {
+                    lastDate = today;
+                    localStorage.setItem('calorieCounter_lastDate', today);
+                }
+            }
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('calorieCounter_dailyGoal', dailyGoal.toString());
+            localStorage.setItem('calorieCounter_proteinGoal', proteinGoal.toString());
+            localStorage.setItem('calorieCounter_currentCalories', currentCalories.toString());
+            localStorage.setItem('calorieCounter_currentProtein', currentProtein.toString());
+            localStorage.setItem('calorieCounter_foodLog', JSON.stringify(foodLog));
+            localStorage.setItem('calorieCounter_lastDate', today);
+        }
+
+        // Update display
+        function updateDisplay() {
+            currentCaloriesEl.textContent = currentCalories;
+            currentProteinEl.textContent = currentProtein + 'g';
+            calorieGoalEl.textContent = dailyGoal;
+            proteinGoalEl.textContent = proteinGoal + 'g';
+            goalTextEl.textContent = `${dailyGoal} calories | ${proteinGoal}g protein`;
+
+            // Update progress circles
+            const calorieProgress = Math.min((currentCalories / dailyGoal) * 100, 100);
+            const proteinProgress = Math.min((currentProtein / proteinGoal) * 100, 100);
+            
+            caloriesProgressEl.setAttribute('stroke-dasharray', `${calorieProgress * 2.513} 251.3`);
+            proteinProgressEl.setAttribute('stroke-dasharray', `${proteinProgress * 2.513} 251.3`);
+
+            // Update colors for over goals
+            const isOverCalories = currentCalories > dailyGoal;
+            const isOverProtein = currentProtein > proteinGoal;
+            
+            caloriesProgressEl.setAttribute('stroke', isOverCalories ? '#ef4444' : '#22c55e');
+            proteinProgressEl.setAttribute('stroke', isOverProtein ? '#ef4444' : '#3b82f6');
+
+            // Update remaining/over stats
+            updateRemainingStats();
+            updateFoodLog();
+        }
+
+        // Update remaining stats
+        function updateRemainingStats() {
+            const isOverCalories = currentCalories > dailyGoal;
+            const isOverProtein = currentProtein > proteinGoal;
+            
+            const caloriesRemaining = isOverCalories ? currentCalories - dailyGoal : dailyGoal - currentCalories;
+            const proteinRemaining = isOverProtein ? currentProtein - proteinGoal : proteinGoal - currentProtein;
+
+            // Update calories remaining
+            caloriesRemainingEl.className = isOverCalories ? 'bg-red-50 p-4 rounded-lg text-center' : 'bg-gray-50 p-4 rounded-lg text-center';
+            caloriesRemainingEl.querySelector('i').className = isOverCalories ? 'text-red-600' : 'text-gray-600';
+            caloriesRemainingEl.querySelector('span').textContent = isOverCalories ? 'Over Cal' : 'Cal Left';
+            caloriesRemainingEl.querySelector('span').className = isOverCalories ? 'text-sm font-medium text-red-800' : 'text-sm font-medium text-gray-800';
+            caloriesRemainingEl.querySelector('div:last-child').textContent = caloriesRemaining;
+            caloriesRemainingEl.querySelector('div:last-child').className = isOverCalories ? 'text-lg font-bold text-red-800' : 'text-lg font-bold text-gray-800';
+
+            // Update protein remaining
+            proteinRemainingEl.className = isOverProtein ? 'bg-red-50 p-4 rounded-lg text-center' : 'bg-gray-50 p-4 rounded-lg text-center';
+            proteinRemainingEl.querySelector('i').className = isOverProtein ? 'text-red-600' : 'text-gray-600';
+            proteinRemainingEl.querySelector('span').textContent = isOverProtein ? 'Over Protein' : 'Protein Left';
+            proteinRemainingEl.querySelector('span').className = isOverProtein ? 'text-sm font-medium text-red-800' : 'text-sm font-medium text-gray-800';
+            proteinRemainingEl.querySelector('div:last-child').textContent = proteinRemaining + 'g';
+            proteinRemainingEl.querySelector('div:last-child').className = isOverProtein ? 'text-lg font-bold text-red-800' : 'text-lg font-bold text-gray-800';
+        }
+
+        // Update food log display
+        function updateFoodLog() {
+            if (foodLog.length === 0) {
+                foodLogSectionEl.classList.add('hidden');
+                return;
+            }
+
+            foodLogSectionEl.classList.remove('hidden');
+            foodLogEl.innerHTML = '';
+
+            foodLog.forEach(entry => {
+                const entryEl = document.createElement('div');
+                entryEl.className = 'flex items-center justify-between p-3 bg-gray-50 rounded-lg';
+                entryEl.innerHTML = `
+                    <div class="flex-1">
+                        <div class="font-medium text-gray-800">${entry.food}</div>
+                        <div class="text-sm text-gray-600 flex items-center gap-1">
+                            <i data-lucide="clock" class="w-3 h-3"></i>
+                            ${entry.time}
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="text-right">
+                            <div class="font-semibold text-gray-800">${entry.calories} cal</div>
+                            <div class="text-sm text-blue-600">${entry.protein}g protein</div>
+                        </div>
+                        <button onclick="removeFood(${entry.id})" class="p-1 text-red-500 hover:text-red-700 transition-colors">
+                            <i data-lucide="minus" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                `;
+                foodLogEl.appendChild(entryEl);
+            });
+            lucide.createIcons();
+        }
+
+        // Add food
+        function addFood() {
+            const foodItem = document.getElementById('foodItem').value.trim();
+            const calories = parseInt(document.getElementById('caloriesInputFood').value);
+            const protein = parseInt(document.getElementById('proteinInputFood').value) || 0;
+
+            if (foodItem && !isNaN(calories) && calories > 0) {
+                const newEntry = {
+                    id: Date.now(),
+                    food: foodItem,
+                    calories: calories,
+                    protein: protein,
+                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                };
+
+                foodLog.push(newEntry);
+                currentCalories += calories;
+                currentProtein += protein;
+
+                // Clear inputs
+                document.getElementById('foodItem').value = '';
+                document.getElementById('caloriesInputFood').value = '';
+                document.getElementById('proteinInputFood').value = '';
+
+                saveData();
+                updateDisplay();
+            }
+        }
+
+        // Remove food
+        function removeFood(id) {
+            const entryIndex = foodLog.findIndex(entry => entry.id === id);
+            if (entryIndex !== -1) {
+                const entry = foodLog[entryIndex];
+                currentCalories -= entry.calories;
+                currentProtein -= entry.protein;
+                foodLog.splice(entryIndex, 1);
+
+                saveData();
+                updateDisplay();
+            }
+        }
+
+        // Reset day
+        function resetDay() {
+            currentCalories = 0;
+            currentProtein = 0;
+            foodLog = [];
+            lastDate = today;
+            saveData();
+            updateDisplay();
+        }
+
+        // Event listeners
+        document.getElementById('addFoodBtn').addEventListener('click', addFood);
+        document.getElementById('resetBtn').addEventListener('click', resetDay);
+
+        // Goal setting
+        document.getElementById('goalBtn').addEventListener('click', () => {
+            goalDisplayEl.classList.add('hidden');
+            goalInputsEl.classList.remove('hidden');
+            document.getElementById('calorieInput').value = dailyGoal;
+            document.getElementById('proteinInputGoal').value = proteinGoal;
+        });
+
+        document.getElementById('setGoalsBtn').addEventListener('click', () => {
+            const newCalorieGoal = parseInt(document.getElementById('calorieInput').value);
+            const newProteinGoal = parseInt(document.getElementById('proteinInputGoal').value);
+
+            if (!isNaN(newCalorieGoal) && newCalorieGoal > 0) {
+                dailyGoal = newCalorieGoal;
+            }
+            if (!isNaN(newProteinGoal) && newProteinGoal > 0) {
+                proteinGoal = newProteinGoal;
+            }
+
+            goalDisplayEl.classList.remove('hidden');
+            goalInputsEl.classList.add('hidden');
+            
+            saveData();
+            updateDisplay();
+        });
+
+        document.getElementById('cancelGoalsBtn').addEventListener('click', () => {
+            goalDisplayEl.classList.remove('hidden');
+            goalInputsEl.classList.add('hidden');
+        });
+
+        // Enter key support
+        document.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                if (e.target.id === 'foodItem' || e.target.id === 'caloriesInputFood' || e.target.id === 'proteinInputFood') {
+                    addFood();
+                } else if (e.target.id === 'calorieInput' || e.target.id === 'proteinInputGoal') {
+                    document.getElementById('setGoalsBtn').click();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
