@@ -332,9 +332,27 @@
             color: #7f8c8d;
             margin-top: 20px;
             padding: 15px;
-            background: #fff3cd;
+            background: #d1f2eb;
             border-radius: 10px;
-            border: 1px solid #ffeaa7;
+            border: 1px solid #82e0aa;
+        }
+
+        .save-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #27ae60;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-size: 0.9em;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+        }
+
+        .save-indicator.show {
+            opacity: 1;
         }
 
         @media (max-width: 480px) {
@@ -460,8 +478,13 @@
 
         <!-- Note -->
         <div class="note">
-            ⚠️ Data will reset when you refresh the page
+            ✅ Your data is automatically saved and will persist when you close and reopen the app!
         </div>
+    </div>
+
+    <!-- Save Indicator -->
+    <div class="save-indicator" id="saveIndicator">
+        Data saved!
     </div>
 
     <script>
@@ -473,9 +496,65 @@
         let foodLog = [];
         let nextId = 1;
 
+        // Local storage functions
+        function saveData() {
+            const data = {
+                calorieGoal,
+                proteinGoal,
+                currentCalories,
+                currentProtein,
+                foodLog,
+                nextId,
+                lastSaved: new Date().toISOString().split('T')[0] // Save just the date
+            };
+            localStorage.setItem('nutritionTrackerData', JSON.stringify(data));
+            showSaveIndicator();
+        }
+
+        function loadData() {
+            const savedData = localStorage.getItem('nutritionTrackerData');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                const today = new Date().toISOString().split('T')[0];
+                
+                // Check if data is from today
+                if (data.lastSaved === today) {
+                    // Load all data if it's from today
+                    calorieGoal = data.calorieGoal || 2000;
+                    proteinGoal = data.proteinGoal || 150;
+                    currentCalories = data.currentCalories || 0;
+                    currentProtein = data.currentProtein || 0;
+                    foodLog = data.foodLog || [];
+                    nextId = data.nextId || 1;
+                } else {
+                    // Only load goals if data is from a previous day
+                    calorieGoal = data.calorieGoal || 2000;
+                    proteinGoal = data.proteinGoal || 150;
+                    // Reset daily data
+                    currentCalories = 0;
+                    currentProtein = 0;
+                    foodLog = [];
+                    nextId = 1;
+                }
+                
+                // Update input fields with loaded goals
+                document.getElementById('calorieGoalInput').value = calorieGoal;
+                document.getElementById('proteinGoalInput').value = proteinGoal;
+            }
+        }
+
+        function showSaveIndicator() {
+            const indicator = document.getElementById('saveIndicator');
+            indicator.classList.add('show');
+            setTimeout(() => {
+                indicator.classList.remove('show');
+            }, 2000);
+        }
+
         // Initialize the app
         function init() {
             document.getElementById('currentDate').textContent = new Date().toLocaleDateString();
+            loadData();
             updateDisplay();
         }
 
@@ -487,6 +566,7 @@
             if (newCalorieGoal > 0) calorieGoal = newCalorieGoal;
             if (newProteinGoal > 0) proteinGoal = newProteinGoal;
             
+            saveData();
             updateDisplay();
         }
 
@@ -514,6 +594,7 @@
                 document.getElementById('foodCalories').value = '';
                 document.getElementById('foodProtein').value = '';
 
+                saveData();
                 updateDisplay();
             }
         }
@@ -526,17 +607,21 @@
                 currentCalories -= food.calories;
                 currentProtein -= food.protein;
                 foodLog.splice(index, 1);
+                saveData();
                 updateDisplay();
             }
         }
 
         // Reset day
         function resetDay() {
-            currentCalories = 0;
-            currentProtein = 0;
-            foodLog = [];
-            nextId = 1;
-            updateDisplay();
+            if (confirm('Are you sure you want to reset all data for today? This cannot be undone.')) {
+                currentCalories = 0;
+                currentProtein = 0;
+                foodLog = [];
+                nextId = 1;
+                saveData();
+                updateDisplay();
+            }
         }
 
         // Update display
@@ -605,6 +690,9 @@
                 foodListElement.appendChild(foodItem);
             });
         }
+
+        // Auto-save when user leaves the page
+        window.addEventListener('beforeunload', saveData);
 
         // Keyboard support
         document.addEventListener('keypress', (e) => {
